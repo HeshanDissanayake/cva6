@@ -1,4 +1,4 @@
-# Author: Florian Zaruba, ETH Zurich
+# Author: Florian Zaruba, ETH Zuricha
 # Date: 03/19/2017
 # Description: Makefile for linting and testing Ariane.
 
