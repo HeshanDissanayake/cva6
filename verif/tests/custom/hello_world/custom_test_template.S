@@ -16,6 +16,11 @@
 main:
 # core of the test
 # (example of) final self-check test
+
+  li a0, 2
+  li a1, 3
+  add a2, a0, a1
+
   li a0, 0xCAFE;
   li a1, 0xCAFE;
   xor a2, a0, a1;
