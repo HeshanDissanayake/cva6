@@ -589,10 +589,10 @@ module issue_read_operands
   // Integer Register File
   // ----------------------
   logic [  CVA6Cfg.NrRgprPorts-1:0][CVA6Cfg.XLEN-1:0] rdata;
-  logic [  CVA6Cfg.NrRgprPorts-1:0][             4:0] raddr_pack;
+  logic [  CVA6Cfg.NrRgprPorts-1:0][             5:0] raddr_pack;
 
   // pack signals
-  logic [CVA6Cfg.NrCommitPorts-1:0][             4:0] waddr_pack;
+  logic [CVA6Cfg.NrCommitPorts-1:0][             5:0] waddr_pack;
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata_pack;
   logic [CVA6Cfg.NrCommitPorts-1:0]                   we_pack;
 
@@ -629,7 +629,9 @@ module issue_read_operands
         .CVA6Cfg      (CVA6Cfg),
         .DATA_WIDTH   (CVA6Cfg.XLEN),
         .NR_READ_PORTS(CVA6Cfg.NrRgprPorts),
-        .ZERO_REG_ZERO(1)
+        .ZERO_REG_ZERO(1),
+        .ADDR_WIDTH   (6)
+
     ) i_ariane_regfile (
         .test_en_i(1'b0),
         .raddr_i  (raddr_pack),

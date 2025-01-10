@@ -26,7 +26,9 @@ module ariane_regfile #(
     parameter config_pkg::cva6_cfg_t CVA6Cfg       = config_pkg::cva6_cfg_empty,
     parameter int unsigned           DATA_WIDTH    = 32,
     parameter int unsigned           NR_READ_PORTS = 2,
-    parameter bit                    ZERO_REG_ZERO = 0
+    parameter bit                    ZERO_REG_ZERO = 0,
+    parameter int unsigned          ADDR_WIDTH = 5,
+    
 ) (
     // clock and reset
     input  logic                                             clk_i,
@@ -34,15 +36,14 @@ module ariane_regfile #(
     // disable clock gates for testing
     input  logic                                             test_en_i,
     // read port
-    input  logic [        NR_READ_PORTS-1:0][           4:0] raddr_i,
+    input  logic [        NR_READ_PORTS-1:0][           ADDR_WIDTH-1:0] raddr_i,
     output logic [        NR_READ_PORTS-1:0][DATA_WIDTH-1:0] rdata_o,
     // write port
-    input  logic [CVA6Cfg.NrCommitPorts-1:0][           4:0] waddr_i,
+    input  logic [CVA6Cfg.NrCommitPorts-1:0][           ADDR_WIDTH-1:0] waddr_i,
     input  logic [CVA6Cfg.NrCommitPorts-1:0][DATA_WIDTH-1:0] wdata_i,
     input  logic [CVA6Cfg.NrCommitPorts-1:0]                 we_i
 );
 
-  localparam ADDR_WIDTH = 5;
   localparam NUM_WORDS = 2 ** ADDR_WIDTH;
 
   logic [            NUM_WORDS-1:0][DATA_WIDTH-1:0] mem;
@@ -59,7 +60,7 @@ module ariane_regfile #(
   end
 
   // loop from 1 to NUM_WORDS-1 as R0 is nil
-  always_ff @(posedge clk_i, negedge rst_ni) begin : register_write_behavioral
+  always_ff @(posedge clk_i, negedge rst_ni) begin : register_write_behaviorals
     if (~rst_ni) begin
       mem <= '{default: '0};
     end else begin
