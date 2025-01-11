@@ -1,6 +1,6 @@
 export DV_OPTS="$DV_OPTS --issrun_opts=+debug_disable=1+UVM_VERBOSITY=UVM_NONE"
 CC_OPTS="-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -g ../tests/custom/common/syscalls.c ../tests/custom/common/crt.S -I../tests/custom/env -I../tests/custom/common -lgcc"
-DV_SIMULATORS=veri-testharness
+DV_SIMULATORS=veri-testharness,spike
 
 export CVA6_REPO_DIR="/home/heshds/working_dir/cva6_new/cva6"
 export RISCV="/opt/dev/cva6_riscv"

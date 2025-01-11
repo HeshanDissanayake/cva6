@@ -27,7 +27,7 @@ module ariane_regfile #(
     parameter int unsigned           DATA_WIDTH    = 32,
     parameter int unsigned           NR_READ_PORTS = 2,
     parameter bit                    ZERO_REG_ZERO = 0,
-    parameter int unsigned          ADDR_WIDTH = 5,
+    parameter int unsigned          ADDR_WIDTH = 5
     
 ) (
     // clock and reset

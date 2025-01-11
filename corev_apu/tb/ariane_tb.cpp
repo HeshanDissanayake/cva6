@@ -132,7 +132,7 @@ int main(int argc, char **argv) {
   bool verbose;
   bool perf;
   unsigned random_seed = (unsigned)time(NULL) ^ (unsigned)getpid();
-  uint64_t max_cycles = -1;
+  uint64_t max_cycles = 850;
   int ret = 0;
   bool print_cycles = false;
   // Port numbers are 16 bit unsigned integers.
@@ -355,7 +355,7 @@ done_processing:
         }
   }
 
-  while (!dtm->done() && !jtag->done() && !(top->exit_o & 0x1)) {
+  while (!dtm->done() && !jtag->done() && !(top->exit_o & 0x1)  && (main_time < max_cycles)) {
     top->clk_i = 0;
     top->eval();
 #if VM_TRACE
