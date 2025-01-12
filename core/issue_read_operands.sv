@@ -40,19 +40,19 @@ module issue_read_operands
     // Issue stage acknowledge - TO_BE_COMPLETED
     output logic [SUPERSCALAR:0] issue_ack_o,
     // rs1 operand address - scoreboard
-    output logic [SUPERSCALAR:0][REG_ADDR_SIZE-1:0] rs1_o,
+    output logic [SUPERSCALAR:0][REG_ADDR_SIZE_NEW - 1:0] rs1_o,
     // rs1 operand - scoreboard
     input logic [SUPERSCALAR:0][CVA6Cfg.XLEN-1:0] rs1_i,
     // rs1 operand is valid - scoreboard
     input logic [SUPERSCALAR:0] rs1_valid_i,
     // rs2 operand address - scoreboard
-    output logic [SUPERSCALAR:0][REG_ADDR_SIZE-1:0] rs2_o,
+    output logic [SUPERSCALAR:0][REG_ADDR_SIZE_NEW-1:0] rs2_o,
     // rs2 operand - scoreboard
     input logic [SUPERSCALAR:0][CVA6Cfg.XLEN-1:0] rs2_i,
     // rs2 operand is valid - scoreboard
     input logic [SUPERSCALAR:0] rs2_valid_i,
     // rs3 operand address - scoreboard
-    output logic [SUPERSCALAR:0][REG_ADDR_SIZE-1:0] rs3_o,
+    output logic [SUPERSCALAR:0][REG_ADDR_SIZE_NEW-1:0] rs3_o,
     // rs3 operand - scoreboard
     input rs3_len_t [SUPERSCALAR:0] rs3_i,
     // rs3 operand is valid - scoreboard
@@ -589,10 +589,10 @@ module issue_read_operands
   // Integer Register File
   // ----------------------
   logic [  CVA6Cfg.NrRgprPorts-1:0][CVA6Cfg.XLEN-1:0] rdata;
-  logic [  CVA6Cfg.NrRgprPorts-1:0][             5:0] raddr_pack;
+  logic [  CVA6Cfg.NrRgprPorts-1:0][REG_ADDR_SIZE_NEW-1:0] raddr_pack;
 
   // pack signals
-  logic [CVA6Cfg.NrCommitPorts-1:0][             5:0] waddr_pack;
+  logic [CVA6Cfg.NrCommitPorts-1:0][REG_ADDR_SIZE_NEW-1:0] waddr_pack;
   logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata_pack;
   logic [CVA6Cfg.NrCommitPorts-1:0]                   we_pack;
 

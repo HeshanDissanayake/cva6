@@ -133,15 +133,15 @@ module issue_stage
   fu_t               [2**REG_ADDR_SIZE-1:0]                    rd_clobber_gpr_sb_iro;
   fu_t               [2**REG_ADDR_SIZE-1:0]                    rd_clobber_fpr_sb_iro;
 
-  logic              [       SUPERSCALAR:0][REG_ADDR_SIZE-1:0] rs1_iro_sb;
+  logic              [       SUPERSCALAR:0][REG_ADDR_SIZE_NEW-1:0] rs1_iro_sb;
   logic              [       SUPERSCALAR:0][ CVA6Cfg.XLEN-1:0] rs1_sb_iro;
   logic              [       SUPERSCALAR:0]                    rs1_valid_sb_iro;
 
-  logic              [       SUPERSCALAR:0][REG_ADDR_SIZE-1:0] rs2_iro_sb;
+  logic              [       SUPERSCALAR:0][REG_ADDR_SIZE_NEW-1:0] rs2_iro_sb;
   logic              [       SUPERSCALAR:0][ CVA6Cfg.XLEN-1:0] rs2_sb_iro;
   logic              [       SUPERSCALAR:0]                    rs2_valid_iro_sb;
 
-  logic              [       SUPERSCALAR:0][REG_ADDR_SIZE-1:0] rs3_iro_sb;
+  logic              [       SUPERSCALAR:0][REG_ADDR_SIZE_NEW-1:0] rs3_iro_sb;
   rs3_len_t          [       SUPERSCALAR:0]                    rs3_sb_iro;
   logic              [       SUPERSCALAR:0]                    rs3_valid_iro_sb;
 
