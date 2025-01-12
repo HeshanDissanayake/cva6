@@ -130,7 +130,7 @@ module issue_stage
   // ---------------------------------------------------
   typedef logic [(CVA6Cfg.NrRgprPorts == 3 ? CVA6Cfg.XLEN : CVA6Cfg.FLen)-1:0] rs3_len_t;
 
-  fu_t               [2**REG_ADDR_SIZE-1:0]                    rd_clobber_gpr_sb_iro;
+  fu_t               [2**REG_ADDR_SIZE_NEW-1:0]                    rd_clobber_gpr_sb_iro;
   fu_t               [2**REG_ADDR_SIZE-1:0]                    rd_clobber_fpr_sb_iro;
 
   logic              [       SUPERSCALAR:0][REG_ADDR_SIZE_NEW-1:0] rs1_iro_sb;

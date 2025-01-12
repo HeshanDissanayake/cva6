@@ -30,7 +30,7 @@ module scoreboard #(
     // Flush whole scoreboard - TO_BE_COMPLETED
     input logic flush_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    output ariane_pkg::fu_t [2**ariane_pkg::REG_ADDR_SIZE-1:0] rd_clobber_gpr_o,
+    output ariane_pkg::fu_t [2**ariane_pkg::REG_ADDR_SIZE_NEW-1:0] rd_clobber_gpr_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     output ariane_pkg::fu_t [2**ariane_pkg::REG_ADDR_SIZE-1:0] rd_clobber_fpr_o,
 
@@ -267,7 +267,7 @@ module scoreboard #(
   // RD clobber process
   // -------------------
   // rd_clobber output: output currently clobbered destination registers
-  logic            [2**ariane_pkg::REG_ADDR_SIZE-1:0][CVA6Cfg.NR_SB_ENTRIES:0] gpr_clobber_vld;
+  logic            [2**ariane_pkg::REG_ADDR_SIZE_NEW-1:0][CVA6Cfg.NR_SB_ENTRIES:0] gpr_clobber_vld;
   logic            [2**ariane_pkg::REG_ADDR_SIZE-1:0][CVA6Cfg.NR_SB_ENTRIES:0] fpr_clobber_vld;
   ariane_pkg::fu_t [         CVA6Cfg.NR_SB_ENTRIES:0]                          clobber_fu;
 
@@ -293,7 +293,7 @@ module scoreboard #(
     gpr_clobber_vld[0] = '0;
   end
 
-  for (genvar k = 0; k < 2 ** ariane_pkg::REG_ADDR_SIZE; k++) begin : gen_sel_clobbers
+  for (genvar k = 0; k < 2 ** ariane_pkg::REG_ADDR_SIZE_NEW; k++) begin : gen_sel_clobbers
     // get fu that is going to clobber this register (there should be only one)
     rr_arb_tree #(
         .NumIn(CVA6Cfg.NR_SB_ENTRIES + 1),

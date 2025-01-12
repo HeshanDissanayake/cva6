@@ -59,7 +59,7 @@ module issue_read_operands
     input logic [SUPERSCALAR:0] rs3_valid_i,
     // get clobber input
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input fu_t [2**REG_ADDR_SIZE-1:0] rd_clobber_gpr_i,
+    input fu_t [2**REG_ADDR_SIZE_NEW-1:0] rd_clobber_gpr_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input fu_t [2**REG_ADDR_SIZE-1:0] rd_clobber_fpr_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
