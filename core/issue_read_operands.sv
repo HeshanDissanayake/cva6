@@ -105,7 +105,7 @@ module issue_read_operands
     // CVXIF offloaded instruction - TO_BE_COMPLETED
     output logic [31:0] cvxif_off_instr_o,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
-    input logic [CVA6Cfg.NrCommitPorts-1:0][4:0] waddr_i,
+    input logic [CVA6Cfg.NrCommitPorts-1:0][REG_ADDR_SIZE_NEW-1:0] waddr_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
     input logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata_i,
     // TO_BE_COMPLETED - TO_BE_COMPLETED
@@ -552,8 +552,8 @@ module issue_read_operands
           for (int unsigned c = 0; c < CVA6Cfg.NrCommitPorts; c++) begin
             if ((CVA6Cfg.FpPresent && ariane_pkg::is_rd_fpr(
                     issue_instr_i[i].op
-                )) ? (we_fpr_i[c] && waddr_i[c] == issue_instr_i[i].rd[4:0]) :
-                    (we_gpr_i[c] && waddr_i[c] == issue_instr_i[i].rd[4:0])) begin
+                )) ? (we_fpr_i[c] && waddr_i[c] == issue_instr_i[i].rd[REG_ADDR_SIZE_NEW-1:0]) :
+                    (we_gpr_i[c] && waddr_i[c] == issue_instr_i[i].rd[REG_ADDR_SIZE_NEW-1:0])) begin
               issue_ack_o[i] = 1'b1;
             end
           end
@@ -597,10 +597,10 @@ module issue_read_operands
   logic [CVA6Cfg.NrCommitPorts-1:0]                   we_pack;
 
   for (genvar i = 0; i <= SUPERSCALAR; i++) begin
-    assign raddr_pack[i*OPERANDS_PER_INSTR+0] = issue_instr_i[i].rs1[4:0];
-    assign raddr_pack[i*OPERANDS_PER_INSTR+1] = issue_instr_i[i].rs2[4:0];
+    assign raddr_pack[i*OPERANDS_PER_INSTR+0] = issue_instr_i[i].rs1[REG_ADDR_SIZE_NEW-1:0];
+    assign raddr_pack[i*OPERANDS_PER_INSTR+1] = issue_instr_i[i].rs2[REG_ADDR_SIZE_NEW-1:0];
     if (OPERANDS_PER_INSTR == 3) begin
-      assign raddr_pack[i*OPERANDS_PER_INSTR+2] = issue_instr_i[i].result[4:0];
+      assign raddr_pack[i*OPERANDS_PER_INSTR+2] = issue_instr_i[i].result[REG_ADDR_SIZE_NEW-1:0];
     end
   end
 

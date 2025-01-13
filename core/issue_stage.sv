@@ -107,7 +107,7 @@ module issue_stage
     // CVXIF write enable - EX_STAGE
     input logic x_we_i,
     // TO_BE_COMPLETED - EX_STAGE
-    input logic [CVA6Cfg.NrCommitPorts-1:0][4:0] waddr_i,
+    input logic [CVA6Cfg.NrCommitPorts-1:0][REG_ADDR_SIZE_NEW-1:0] waddr_i,
     // TO_BE_COMPLETED - EX_STAGE
     input logic [CVA6Cfg.NrCommitPorts-1:0][CVA6Cfg.XLEN-1:0] wdata_i,
     // GPR write enable - EX_STAGE
