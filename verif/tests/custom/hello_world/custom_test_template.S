@@ -17,7 +17,7 @@ main:
 # core of the test
 # (example of) final self-check test
 
-  li a0, 2
+  li a0, 6
   li a1, 3
   add a2, a0, a1
 
