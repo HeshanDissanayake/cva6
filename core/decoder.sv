@@ -123,7 +123,7 @@ module decoder
   logic [CVA6Cfg.XLEN-1:0] imm_bi_type;
 
   // Instantiate offset
-  logic offset = 1'b0;
+  logic offset = 1'b1;
 
   // ---------------------------------------
   // Accelerator instructions' first-pass decoder

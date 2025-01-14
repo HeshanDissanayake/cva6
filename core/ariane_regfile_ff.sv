@@ -72,6 +72,7 @@ module ariane_regfile #(
         end
         if (ZERO_REG_ZERO) begin
           mem[0] <= '0;
+          mem[32] <= '0;
         end
       end
     end

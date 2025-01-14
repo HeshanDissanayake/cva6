@@ -718,9 +718,7 @@ module issue_read_operands
       assign operand_c_gpr[i] = rdata[i*OPERANDS_PER_INSTR+2];
     end
 
-    assign operand_a_regfile[i] = (CVA6Cfg.FpPresent && is_rs1_fpr(
-        issue_instr_i[i].op
-    )) ? {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, fprdata[0]} : rdata[i*OPERANDS_PER_INSTR+0];
+    assign operand_a_regfile[i] = (CVA6Cfg.FpPresent && is_rs1_fpr(  issue_instr_i[i].op   )) ? {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, fprdata[0]} : rdata[i*OPERANDS_PER_INSTR+0];
     assign operand_b_regfile[i] = (CVA6Cfg.FpPresent && is_rs2_fpr(
         issue_instr_i[i].op
     )) ? {{CVA6Cfg.XLEN - CVA6Cfg.FLen{1'b0}}, fprdata[1]} : rdata[i*OPERANDS_PER_INSTR+1];
