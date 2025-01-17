@@ -102,6 +102,8 @@ module decoder
   assign instr = riscv::instruction_t'(instruction_i);
   // transformed instruction
   logic [31:0] tinst;
+
+  logic [31:0] register_config; // register configuration from regsw_c
   // --------------------
   // Immediate select
   // --------------------
@@ -123,7 +125,7 @@ module decoder
   logic [CVA6Cfg.XLEN-1:0] imm_bi_type;
 
   // Instantiate offset
-  logic offset = 1'b1;
+  logic offset = 1'b0;
 
   // ---------------------------------------
   // Accelerator instructions' first-pass decoder
@@ -997,6 +999,10 @@ module decoder
             3'b000: instruction_o.op = ariane_pkg::SB;
             3'b001: instruction_o.op = ariane_pkg::SH;
             3'b010: instruction_o.op = ariane_pkg::SW;
+            3'b100: begin // regsw_c opcode
+               instruction_o.fu = NONE; 
+               register_config = {instr.stype.rs1,instr.stype.rs2,imm_s_type};
+            end
             3'b011:
             if (CVA6Cfg.XLEN == 64) instruction_o.op = ariane_pkg::SD;
             else illegal_instr = 1'b1;
