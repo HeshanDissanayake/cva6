@@ -20,6 +20,7 @@ main:
   li a0, 6
   li a1, 3
   add a2, a0, a1
+  regsw_c	x0, 0x114(x18)		# 100 100 000 000 100 010 100
 
   li a0, 0xCAFE;
   li a1, 0xCAFE;

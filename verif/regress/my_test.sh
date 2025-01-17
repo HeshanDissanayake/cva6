@@ -3,7 +3,7 @@ CC_OPTS="-static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -g 
 DV_SIMULATORS=veri-testharness
 
 export CVA6_REPO_DIR="/home/heshds/working_dir/cva6_new/cva6"
-export RISCV="/opt/dev/cva6_riscv"
+export RISCV="/opt/dev/cva6_riscv_regsw"
 export TRACE_FAST=1
 
 # install the required tools
