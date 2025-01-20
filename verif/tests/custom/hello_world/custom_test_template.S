@@ -17,12 +17,21 @@ main:
 # core of the test
 # (example of) final self-check test
 
-  li a0, 6
-  li a1, 3
-  add a2, a0, a1
-  regsw_c	x0, 0x114(x18)		# 100 100 000 000 100 010 100
-
+  li x20, 6
+  li x21, 3
   li a0, 0xCAFE;
+
+  regsw_c	x0, 0x114(x18)		# 100 100 000 000 100 010 100
+  add x1, x0, x20
+  add x2, x0, x21
+
+  add x0, x0, x0
+  add x0, x0, x0
+
+  add x3, x20, x21
+  add x22, x3, x0
+
+                           
   li a1, 0xCAFE;
   xor a2, a0, a1;
   beqz a2, pass;

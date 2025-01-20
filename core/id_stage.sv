@@ -88,7 +88,14 @@ module id_stage #(
   issue_struct_t [ariane_pkg::SUPERSCALAR:0] issue_n, issue_q;
 
   logic              [ariane_pkg::SUPERSCALAR:0]       is_control_flow_instr;
+  
+  logic              [ariane_pkg::SUPERSCALAR:0][31:0] register_config_q, register_config_n;
+  logic              [ariane_pkg::SUPERSCALAR:0][3:0]  register_config_pointer_q, register_config_pointer_n;
+  logic              [ariane_pkg::SUPERSCALAR:0]       is_regsw_intr;
+
   scoreboard_entry_t [ariane_pkg::SUPERSCALAR:0]       decoded_instruction;
+  scoreboard_entry_t [ariane_pkg::SUPERSCALAR:0]       decoded_intermediate_instruction;
+
   logic              [ariane_pkg::SUPERSCALAR:0][31:0] orig_instr;
 
   logic              [ariane_pkg::SUPERSCALAR:0]       is_illegal;
@@ -198,11 +205,64 @@ module id_stage #(
         .vtw_i,
         .tsr_i,
         .hu_i,
-        .instruction_o             (decoded_instruction[i]),
+        .instruction_o             (decoded_intermediate_instruction[i]),
         .orig_instr_o              (orig_instr[i]),
-        .is_control_flow_instr_o   (is_control_flow_instr[i])
+        .is_control_flow_instr_o   (is_control_flow_instr[i]),
+        .is_regsw_intr_o           (is_regsw_intr[i])
     );
   end
+
+  logic [5:0]rs1_bank, rs2_bank, rd_bank;
+  logic [5:0] rs1_bank_id, rs2_bank_id, rd_bank_id;
+  
+
+  //register address extention
+  for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
+
+    
+
+    // assign decoded_instruction[i].rs1 = {register_config_q[18-register_config_pointer_q+2], decoded_intermediate_instruction[i].rs1[(ariane_pkg::REG_ADDR_SIZE_NEW-1)-1:0]};
+    // assign decoded_instruction[i].rs2 = {register_config_q[18-register_config_pointer_q+1], decoded_intermediate_instruction[i].rs2[(ariane_pkg::REG_ADDR_SIZE_NEW-1)-1:0]};
+    // assign decoded_instruction[i].rd  = {register_config_q[18-register_config_pointer_q],   decoded_intermediate_instruction[i].rd[(ariane_pkg::REG_ADDR_SIZE_NEW-1)-1:0]};
+
+    assign rd_bank_id = (18-(register_config_pointer_q+1)*3)+2 +3;
+    assign rs1_bank_id = (18-(register_config_pointer_q+1)*3)+1 +3;
+    assign rs2_bank_id  = (18-(register_config_pointer_q+1)*3)   +3;
+
+
+    assign rs1_bank = {register_config_q[i][rs1_bank_id], decoded_intermediate_instruction[i].rs1[(ariane_pkg::REG_ADDR_SIZE_NEW-1)-1:0]};
+    assign rs2_bank = {register_config_q[i][rs2_bank_id], decoded_intermediate_instruction[i].rs2[(ariane_pkg::REG_ADDR_SIZE_NEW-1)-1:0]};
+    assign rd_bank  = {register_config_q[i][rd_bank_id],  decoded_intermediate_instruction[i].rd[(ariane_pkg::REG_ADDR_SIZE_NEW-1)-1:0]};
+
+  
+  end
+
+  always_comb begin
+    decoded_instruction[0] = decoded_intermediate_instruction[0];
+    decoded_instruction[0].rs1 = rs1_bank;
+    decoded_instruction[0].rs2 = rs2_bank;
+    decoded_instruction[0].rd = rd_bank;
+
+    register_config_pointer_n[0] = register_config_pointer_q[0];
+    register_config_n[0] = register_config_q[0];
+
+    if(is_regsw_intr) begin
+      register_config_n[0] = {decoded_intermediate_instruction[0].rs1, decoded_intermediate_instruction[0].rs2, decoded_intermediate_instruction[0].result[9:0]}; 
+    end
+
+    if (register_config_pointer_q == 3'b101) begin
+        register_config_n[0] = '0;
+    end 
+
+    if(fetch_entry_ready_o[0]) begin 
+      register_config_pointer_n = ((register_config_pointer_q == 3'b101) || is_regsw_intr ) ? 3'b000: register_config_pointer_q + 3'b001; 
+    end
+
+
+
+
+  end
+
 
   // ------------------
   // Pipeline Register
@@ -278,6 +338,26 @@ module id_stage #(
       if (flush_i) issue_n[0].valid = 1'b0;
     end
   end
+  
+  // logic temp;
+  // assign temp = 
+      // if (fetch_entry_valid_i[0]) begin
+      //   register_config_pointer <= (register_config_pointer == 3'b101) ? 3'b000 : register_config_pointer + 3'b001;
+      // end
+ 
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      register_config_pointer_q <= 3'b000;
+      register_config_q <= '0;
+    end else begin
+      register_config_pointer_q <= register_config_pointer_n;
+      register_config_q <= register_config_n;
+    end
+  
+  end
+  
+    
   // -------------------------
   // Registers (ID <-> Issue)
   // -------------------------
