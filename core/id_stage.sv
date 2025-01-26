@@ -214,21 +214,21 @@ module id_stage #(
 
   logic [5:0]rs1_bank, rs2_bank, rd_bank;
   logic [5:0] rs1_bank_id, rs2_bank_id, rd_bank_id;
-  
+  logic config_rs1, config_rs2, config_rd;
+ 
 
   //register address extention
   for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
 
-    
-
-    // assign decoded_instruction[i].rs1 = {register_config_q[18-register_config_pointer_q+2], decoded_intermediate_instruction[i].rs1[(ariane_pkg::REG_ADDR_SIZE_NEW-1)-1:0]};
-    // assign decoded_instruction[i].rs2 = {register_config_q[18-register_config_pointer_q+1], decoded_intermediate_instruction[i].rs2[(ariane_pkg::REG_ADDR_SIZE_NEW-1)-1:0]};
-    // assign decoded_instruction[i].rd  = {register_config_q[18-register_config_pointer_q],   decoded_intermediate_instruction[i].rd[(ariane_pkg::REG_ADDR_SIZE_NEW-1)-1:0]};
+    // assign is_branch = (decoded_intermediate_instruction[i].opcode == ariane_pkg::BRANCH_OPCODE) ? 1'b1 : 1'b0;
 
     assign rd_bank_id = (18-(register_config_pointer_q+1)*3)+2 +3;
     assign rs1_bank_id = (18-(register_config_pointer_q+1)*3)+1 +3;
     assign rs2_bank_id  = (18-(register_config_pointer_q+1)*3)   +3;
 
+    assign config_rs1 = register_config_q[i][rs1_bank_id];
+    assign config_rs2 = register_config_q[i][rs2_bank_id];
+    assign config_rd  = register_config_q[i][rd_bank_id];
 
     assign rs1_bank = {register_config_q[i][rs1_bank_id], decoded_intermediate_instruction[i].rs1[(ariane_pkg::REG_ADDR_SIZE_NEW-1)-1:0]};
     assign rs2_bank = {register_config_q[i][rs2_bank_id], decoded_intermediate_instruction[i].rs2[(ariane_pkg::REG_ADDR_SIZE_NEW-1)-1:0]};
@@ -250,16 +250,13 @@ module id_stage #(
       register_config_n[0] = {decoded_intermediate_instruction[0].rs1, decoded_intermediate_instruction[0].rs2, decoded_intermediate_instruction[0].result[9:0]}; 
     end
 
-    if (register_config_pointer_q == 3'b101) begin
+    if (register_config_pointer_q == 3'b101 || flush_i) begin
         register_config_n[0] = '0;
     end 
 
     if(fetch_entry_ready_o[0]) begin 
       register_config_pointer_n = ((register_config_pointer_q == 3'b101) || is_regsw_intr ) ? 3'b000: register_config_pointer_q + 3'b001; 
     end
-
-
-
 
   end
 
@@ -312,6 +309,7 @@ module id_stage #(
       if (flush_i) begin
         issue_n[0].valid = 1'b0;
         issue_n[1].valid = 1'b0;
+        
       end
     end
   end else begin

@@ -989,6 +989,9 @@ def load_config(args, cwd):
     if args.target in ("cv64a6_imafdc_sv39", "cv64a6_imafdc_sv39_hpdcache", "cv64a6_imafdc_sv39_wb"):
       args.mabi = "lp64d"
       args.isa  = "rv64gc_zba_zbb_zbs_zbc"
+    elif args.target == "cv64a6_imafd_sv39":
+      args.mabi = "lp64d"
+      args.isa  = "rv64g_zba_zbb_zbs_zbc"
     elif args.target == "cv32a60x": # step1 configuration
       args.mabi = "ilp32"
       args.isa  = "rv32imac_zba_zbb_zbs_zbc"
