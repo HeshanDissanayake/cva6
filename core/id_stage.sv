@@ -215,6 +215,7 @@ module id_stage #(
   logic [5:0]rs1_bank, rs2_bank, rd_bank;
   logic [5:0] rs1_bank_id, rs2_bank_id, rd_bank_id;
   logic config_rs1, config_rs2, config_rd;
+  logic is_jump = (fetch_entry_i[i].branch_predict.cf == ariane_pkg::jump) || (fetch_entry_i[i].branch_predict.cf == ariane_pkg::jumpR);
  
 
   //register address extention
@@ -247,15 +248,15 @@ module id_stage #(
     register_config_n[0] = register_config_q[0];
 
     if(is_regsw_intr) begin
-      register_config_n[0] = {decoded_intermediate_instruction[0].rs1, decoded_intermediate_instruction[0].rs2, decoded_intermediate_instruction[0].result[9:0]}; 
+      register_config_n[0] = {decoded_intermediate_instruction[0].rs1[4:0], decoded_intermediate_instruction[0].rs2[4:0], decoded_intermediate_instruction[0].result[10:0]}; 
     end
 
-    if (register_config_pointer_q == 3'b101 || flush_i) begin
+    if (register_config_pointer_q == 3'b101 || flush_i || is_jump) begin
         register_config_n[0] = '0;
     end 
 
     if(fetch_entry_ready_o[0]) begin 
-      register_config_pointer_n = ((register_config_pointer_q == 3'b101) || is_regsw_intr ) ? 3'b000: register_config_pointer_q + 3'b001; 
+      register_config_pointer_n = ((register_config_pointer_q == 3'b101) || is_regsw_intr || is_jump) ? 3'b000: register_config_pointer_q + 3'b001; 
     end
 
   end
