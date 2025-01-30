@@ -575,6 +575,12 @@ package ariane_pkg;
   // -------------------
   localparam int unsigned MHPMCounterNum = 6;
 
+  // -------------------
+  // register swtich config
+  // -------------------
+
+  localparam int unsigned REGSW_POINTER_LEN = 4;
+
   // --------------------
   // Atomics
   // --------------------

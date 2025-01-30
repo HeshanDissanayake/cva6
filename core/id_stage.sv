@@ -90,7 +90,7 @@ module id_stage #(
   logic              [ariane_pkg::SUPERSCALAR:0]       is_control_flow_instr;
   
   logic              [ariane_pkg::SUPERSCALAR:0][31:0] register_config_q, register_config_n;
-  logic              [ariane_pkg::SUPERSCALAR:0][3:0]  register_config_pointer_q, register_config_pointer_n;
+  logic              [ariane_pkg::SUPERSCALAR:0][ariane_pkg::REGSW_POINTER_LEN-1:0]  register_config_pointer_q, register_config_pointer_n;
   logic              [ariane_pkg::SUPERSCALAR:0]       is_regsw_intr;
 
   scoreboard_entry_t [ariane_pkg::SUPERSCALAR:0]       decoded_instruction;
@@ -215,13 +215,13 @@ module id_stage #(
   logic [5:0]rs1_bank, rs2_bank, rd_bank;
   logic [5:0] rs1_bank_id, rs2_bank_id, rd_bank_id;
   logic config_rs1, config_rs2, config_rd;
-  logic is_jump = (fetch_entry_i[i].branch_predict.cf == ariane_pkg::jump) || (fetch_entry_i[i].branch_predict.cf == ariane_pkg::jumpR);
+  logic is_jump;
  
 
   //register address extention
   for (genvar i = 0; i <= ariane_pkg::SUPERSCALAR; i++) begin
 
-    // assign is_branch = (decoded_intermediate_instruction[i].opcode == ariane_pkg::BRANCH_OPCODE) ? 1'b1 : 1'b0;
+    assign is_jump = (fetch_entry_i[i].branch_predict.cf == ariane_pkg::Jump) || (fetch_entry_i[i].branch_predict.cf == ariane_pkg::JumpR);
 
     assign rd_bank_id = (18-(register_config_pointer_q+1)*3)+2 +3;
     assign rs1_bank_id = (18-(register_config_pointer_q+1)*3)+1 +3;

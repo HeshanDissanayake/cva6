@@ -269,6 +269,12 @@ module cva6
       logic    r_valid;
       r_chan_t r;
     },
+
+    parameter type regws_config_t = struct packed {
+      logic [CVA6Cfg.XLEN-1:0] configuration;
+      logic [ariane_pkg::REGSW_POINTER_LEN-1:0] pointer;
+    } 
+
     //
     parameter type acc_cfg_t = logic,
     parameter acc_cfg_t AccCfg = '0,
