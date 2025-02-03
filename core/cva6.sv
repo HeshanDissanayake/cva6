@@ -86,6 +86,11 @@ module cva6
       exception_t             ex;             // this field contains exceptions which might have happened earlier, e.g.: fetch exceptions
     },
 
+    localparam type regws_config_t = struct packed {
+      logic [CVA6Cfg.XLEN-1:0] configuration;
+      logic [ariane_pkg::REGSW_POINTER_LEN-1:0] pointer;
+    },
+
     // ID/EX/WB Stage
     localparam type scoreboard_entry_t = struct packed {
       logic [CVA6Cfg.VLEN-1:0] pc;  // PC of instruction
@@ -112,6 +117,8 @@ module cva6
       logic is_last_macro_instr;  // is last decoded 32bit instruction of macro definition
       logic is_double_rd_macro_instr;  // is double move decoded 32bit instruction of macro definition
       logic vfp;  // is this a vector floating-point instruction?
+
+      regws_config_t regws_config;  // configuration for register banks 
     },
 
     // branch-predict
@@ -270,10 +277,7 @@ module cva6
       r_chan_t r;
     },
 
-    parameter type regws_config_t = struct packed {
-      logic [CVA6Cfg.XLEN-1:0] configuration;
-      logic [ariane_pkg::REGSW_POINTER_LEN-1:0] pointer;
-    } 
+    
 
     //
     parameter type acc_cfg_t = logic,

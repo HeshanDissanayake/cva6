@@ -277,6 +277,7 @@ module id_stage #(
       issue_n = issue_q;
       fetch_entry_ready_o = '0;
 
+      
       // Clear the valid flag if issue has acknowledged the instruction
       if (issue_instr_ack_i[0]) begin
         issue_n[0].valid = 1'b0;
@@ -315,6 +316,7 @@ module id_stage #(
     end
   end else begin
     always_comb begin
+
       issue_n             = issue_q;
       fetch_entry_ready_o = '0;
 
@@ -331,6 +333,8 @@ module id_stage #(
           fetch_entry_ready_o[0] = 1'b1;
         end
         issue_n[0] = '{1'b1, decoded_instruction[0], orig_instr[0], is_control_flow_instr[0]};
+        issue_n[0].sbe.regws_config.configuration =  register_config_n[0];
+        issue_n[0].sbe.regws_config.pointer =  register_config_pointer_n;
       end
 
       // invalidate the pipeline register on a flush
