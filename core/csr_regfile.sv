@@ -243,6 +243,10 @@ module csr_regfile
   logic [CVA6Cfg.XLEN-1:0] mtval_q, mtval_d;
   logic [CVA6Cfg.XLEN-1:0] mtinst_q, mtinst_d;
   logic [CVA6Cfg.XLEN-1:0] mtval2_q, mtval2_d;
+  
+  logic [CVA6Cfg.XLEN-1:0] eregsw_c_q, eregsw_c_d;
+  logic [CVA6Cfg.XLEN-1:0] eregsw_mask_q, eregsw_mask_d;
+
   logic fiom_d, fiom_q;
 
   logic [CVA6Cfg.XLEN-1:0] stvec_q, stvec_d;
@@ -333,6 +337,15 @@ module csr_regfile
 
     if (csr_read) begin
       unique case (conv_csr_addr.address)
+        riscv::CSR_REGSW_C:
+          csr_rdata = commit_instr_i[0].regws_config.configuration;
+        riscv::CSR_EREGSW_C:
+          csr_rdata = eregsw_c_q;
+        riscv::CSR_REGSW_MASK:
+          csr_rdata = commit_instr_i[0].regws_config.pointer; 
+        riscv::CSR_EREGSW_MASK:
+          csr_rdata = eregsw_mask_q;
+
         riscv::CSR_FFLAGS: begin
           if (CVA6Cfg.FpPresent && !(mstatus_q.fs == riscv::Off || (CVA6Cfg.RVH && v_q && vsstatus_q.fs == riscv::Off))) begin
             csr_rdata = {{CVA6Cfg.XLEN - 5{1'b0}}, fcsr_q.fflags};
@@ -2263,7 +2276,7 @@ module csr_regfile
     end
 
     epc_o = mepc_q[CVA6Cfg.VLEN-1:0];
-    // we are returning from supervisor or virtual supervisor mode, so take the sepc register
+    // we are isreturning from supervor or virtual supervisor mode, so take the sepc register
     if (CVA6Cfg.RVS && sret) begin
       epc_o = (CVA6Cfg.RVH && v_q) ? vsepc_q[CVA6Cfg.VLEN-1:0] : sepc_q[CVA6Cfg.VLEN-1:0];
     end
@@ -2509,6 +2522,11 @@ module csr_regfile
       // pmp
       pmpcfg_q               <= pmpcfg_next;
       pmpaddr_q              <= pmpaddr_next;
+
+      //regsw regsiters
+      eregsw_c_q <= eregsw_c_d;
+      eregsw_mask_q <= eregsw_mask_d;
+
     end
   end
 

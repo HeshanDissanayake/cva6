@@ -652,7 +652,28 @@ package riscv;
     CSR_HPM_COUNTER_28H  = 12'hC9C,  // reserved
     CSR_HPM_COUNTER_29H  = 12'hC9D,  // reserved
     CSR_HPM_COUNTER_30H  = 12'hC9E,  // reserved
-    CSR_HPM_COUNTER_31H  = 12'hC9F   // reserved
+    CSR_HPM_COUNTER_31H  = 12'hC9F,   // reserved
+
+    //regsw CSRs
+    CSR_REGSW_C     = 12'h80E,
+    CSR_EREGSW_C    = 12'h801,
+ 
+    CSR_REGSW_MASK  = 12'h802,
+    CSR_EREGSW_MASK = 12'h807,
+
+    CSR_INC_MASK    = 12'h803,
+    CSR_RS1_BANK    = 12'h804,
+    CSR_RS2_BANK    = 12'h805,
+    CSR_RD_BANK     = 12'h806,
+
+    CSR_DEBUG       = 12'h808,
+    CSR_CONTEXT_IN  = 12'h809,
+    CSR_CONTEXT_OUT = 12'h80A,
+
+    CSR_READ_REGSW_C_HITS   = 12'h80B,
+    CSR_READ_REGSW_C_MISSES = 12'h80C,
+    CSR_READ_REGSW_C_CLEAR  = 12'h80D
+  
   } csr_reg_t;
 
   localparam logic [63:0] SSTATUS_UIE = 'h00000001;
