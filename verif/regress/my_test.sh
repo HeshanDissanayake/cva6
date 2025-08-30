@@ -20,6 +20,8 @@ cd verif/sim/
 # python3 cva6.py --asm_tests /home/heshds/working_dir/cva6_new/cva6/verif/tests/custom/hello_world/custom_test_template.S --iss_yaml cva6.yaml --target cv64a6_imafdc_sv39 --iss=$DV_SIMULATORS --gcc_opts="$CC_OPTS -T ../tests/custom/common/test.ld" $DV_OPTS
 # python3 cva6.py --asm_tests /home/heshds/working_dir/cva6/verif/tests/custom/hello_world/custom_test_template.S --iss_yaml cva6.yaml --target cv64a6_imafd_sv39 --iss=$DV_SIMULATORS --gcc_opts="$CC_OPTS -T ../tests/custom/common/test.ld" $DV_OPTS
 
-python3 cva6.py --elf_tests /home/heshds/working_dir/regsw_tests/sha/sha_exec_regsw.o --iss_yaml cva6.yaml --target cv64a6_imafd_sv39 --iss=$DV_SIMULATORS --gcc_opts="$CC_OPTS -T ../tests/custom/common/test.ld" $DV_OPTS                            
+# python3 cva6.py --elf_tests /home/heshds/working_dir/regsw_tests/sha/sha_exec_regsw.o --iss_yaml cva6.yaml --target cv64a6_imafd_sv39 --iss=$DV_SIMULATORS --gcc_opts="$CC_OPTS -T ../tests/custom/common/test.ld" $DV_OPTS                            
 
 # python3 cva6.py --elf_tests /home/heshds/working_dir/regsw_tests/sha/sha_exec_normal.o --iss_yaml cva6.yaml --target cv64a6_imafd_sv39 --iss=$DV_SIMULATORS --gcc_opts="$CC_OPTS -T ../tests/custom/common/test.ld" $DV_OPTS                            
+
+python3 cva6.py --asm_tests /home/heshds/working_dir/regsw_tests/exception/exception_handling.S --iss_yaml cva6.yaml --target cv64a6_imafd_sv39 --iss=$DV_SIMULATORS --gcc_opts="$CC_OPTS -T ../tests/custom/common/test.ld" $DV_OPTS

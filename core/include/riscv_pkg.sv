@@ -661,7 +661,7 @@ package riscv;
     CSR_REGSW_MASK  = 12'h802,
     CSR_EREGSW_MASK = 12'h807,
 
-    CSR_INC_MASK    = 12'h803,
+    CSR_REGSW_ENABLE    = 12'h803,
     CSR_RS1_BANK    = 12'h804,
     CSR_RS2_BANK    = 12'h805,
     CSR_RD_BANK     = 12'h806,

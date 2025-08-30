@@ -22,7 +22,8 @@ module csr_regfile
     parameter type                   scoreboard_entry_t = logic,
     parameter type                   rvfi_probes_csr_t  = logic,
     parameter int                    VmidWidth          = 1,
-    parameter int unsigned           MHPMCounterNum     = 6
+    parameter int unsigned           MHPMCounterNum     = 6,
+    parameter type                   regsw_config_t     = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -169,7 +170,9 @@ module csr_regfile
     // TO_BE_COMPLETED - PERF_COUNTERS
     output logic [31:0] mcountinhibit_o,
     // RVFI
-    output rvfi_probes_csr_t rvfi_csr_o
+    output rvfi_probes_csr_t rvfi_csr_o,
+
+    output regsw_config_t regsw_restore_o
 );
 
   localparam logic [63:0] SMODE_STATUS_READ_MASK = ariane_pkg::smode_status_read_mask(CVA6Cfg);
@@ -334,17 +337,21 @@ module csr_regfile
     csr_rdata = '0;
     perf_addr_o = csr_addr.address[11:0];
     index = '0;
+    regsw_restore_o = '0;
 
     if (csr_read) begin
       unique case (conv_csr_addr.address)
         riscv::CSR_REGSW_C:
-          csr_rdata = commit_instr_i[0].regws_config.configuration;
+          csr_rdata = commit_instr_i[0].regsw_config.configuration;
         riscv::CSR_EREGSW_C:
           csr_rdata = eregsw_c_q;
         riscv::CSR_REGSW_MASK:
-          csr_rdata = commit_instr_i[0].regws_config.pointer; 
+          csr_rdata = commit_instr_i[0].regsw_config.pointer; 
         riscv::CSR_EREGSW_MASK:
           csr_rdata = eregsw_mask_q;
+        riscv::CSR_REGSW_ENABLE:begin
+          csr_rdata = 0;
+        end
 
         riscv::CSR_FFLAGS: begin
           if (CVA6Cfg.FpPresent && !(mstatus_q.fs == riscv::Off || (CVA6Cfg.RVH && v_q && vsstatus_q.fs == riscv::Off))) begin
@@ -931,9 +938,28 @@ module csr_regfile
     pmpcfg_d                 = pmpcfg_q;
     pmpaddr_d                = pmpaddr_q;
 
+    regsw_restore_o = '0;
+
     // check for correct access rights and that we are writing
     if (csr_we) begin
       unique case (conv_csr_addr.address)
+
+        // regsw
+        riscv::CSR_REGSW_C:begin
+          regsw_restore_o.configuration = csr_wdata;
+          regsw_restore_o.restore_flag = 1;
+        end
+
+        riscv::CSR_REGSW_MASK:begin
+          regsw_restore_o.pointer      = csr_wdata;
+          regsw_restore_o.restore_flag = 2;
+        end
+
+        riscv::CSR_REGSW_ENABLE:begin
+          regsw_restore_o.regsw_enable = csr_wdata;
+          regsw_restore_o.restore_flag = 3;
+        end
+
         // Floating-Point
         riscv::CSR_FFLAGS: begin
           if (CVA6Cfg.FpPresent && !(mstatus_q.fs == riscv::Off || (CVA6Cfg.RVH && v_q && vsstatus_q.fs == riscv::Off))) begin
@@ -1767,10 +1793,12 @@ module csr_regfile
         // trap to machine mode
       end else begin
         //save the regsw_c and the regsw_mask
-        eregsw_c_d = commit_instr_i[0].regws_config.configuration;
-        eregsw_mask_d = commit_instr_i[0].regws_config.pointer;
+        eregsw_c_d = commit_instr_i[0].regsw_config.configuration;
+        eregsw_mask_d = commit_instr_i[0].regsw_config.pointer;
 
-        
+        regsw_restore_o.restore_flag = 2'b11; // 
+        regsw_restore_o.regsw_enable = 1'b0;  // disable regsw
+
 
         // update mstatus
         mstatus_d.mie = 1'b0;
@@ -1968,7 +1996,11 @@ module csr_regfile
     // When executing an xRET instruction, supposing xPP holds the value y, xIE is set to xPIE; the privilege
     // mode is changed to y; xPIE is set to 1; and xPP is set to U
     if (mret) begin
-      // return from exception, IF doesn't care from where we are returning
+      // enable regsw
+      regsw_restore_o.restore_flag = 2'b11; //
+      regsw_restore_o.regsw_enable = 1'b1;  // enable regsw
+      
+       // return from exception, IF doesn't care from where we are returning
       eret_o        = 1'b1;
       // return to the previous privilege level and restore all enable flags
       // get the previous machine interrupt enable flag

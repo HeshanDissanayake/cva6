@@ -976,6 +976,10 @@
 #define CAUSE_FETCH_PAGE_FAULT 0xc
 #define CAUSE_LOAD_PAGE_FAULT 0xd
 #define CAUSE_STORE_PAGE_FAULT 0xf
+
+// regsw CSRs
+
+
 #endif
 #ifdef DECLARE_INSN
 DECLARE_INSN(beq, MATCH_BEQ, MASK_BEQ)

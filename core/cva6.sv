@@ -86,9 +86,11 @@ module cva6
       exception_t             ex;             // this field contains exceptions which might have happened earlier, e.g.: fetch exceptions
     },
 
-    localparam type regws_config_t = struct packed {
+    localparam type regsw_config_t = struct packed {
       logic [CVA6Cfg.XLEN-1:0] configuration;
       logic [ariane_pkg::REGSW_POINTER_LEN-1:0] pointer;
+      logic regsw_enable; // 1: regsw enabled, 0: regsw disabled
+      logic [1:0] restore_flag; // 0: no restore, 1: restore config, 2: restore mask 3:regsw_enable
     },
 
     // ID/EX/WB Stage
@@ -118,7 +120,7 @@ module cva6
       logic is_double_rd_macro_instr;  // is double move decoded 32bit instruction of macro definition
       logic vfp;  // is this a vector floating-point instruction?
 
-      regws_config_t regws_config;  // configuration for register banks 
+      regsw_config_t regsw_config;  // configuration for register banks 
     },
 
     // branch-predict
@@ -526,6 +528,10 @@ module cva6
   riscv::pmpcfg_t [15:0] pmpcfg;
   logic [15:0][CVA6Cfg.PLEN-3:0] pmpaddr;
   logic [31:0] mcountinhibit_csr_perf;
+
+  //csr to idsate for regsw
+  regsw_config_t regsw_restore;
+
   // ----------------------------
   // Performance Counters <-> *
   // ----------------------------
@@ -638,7 +644,8 @@ module cva6
       .irq_ctrl_t(irq_ctrl_t),
       .scoreboard_entry_t(scoreboard_entry_t),
       .interrupts_t(interrupts_t),
-      .INTERRUPTS(INTERRUPTS)
+      .INTERRUPTS(INTERRUPTS),
+      .regsw_config_t(regsw_config_t)
   ) id_stage_i (
       .clk_i,
       .rst_ni,
@@ -670,7 +677,8 @@ module cva6
       .tw_i        (tw_csr_id),
       .vtw_i       (vtw_csr_id),
       .tsr_i       (tsr_csr_id),
-      .hu_i        (hu)
+      .hu_i        (hu),
+      .regsw_restore_i (regsw_restore)
   );
 
   logic [CVA6Cfg.NrWbPorts-1:0][CVA6Cfg.TRANS_ID_BITS-1:0] trans_id_ex_id;
@@ -1007,7 +1015,8 @@ module cva6
       .irq_ctrl_t        (irq_ctrl_t),
       .scoreboard_entry_t(scoreboard_entry_t),
       .rvfi_probes_csr_t (rvfi_probes_csr_t),
-      .MHPMCounterNum    (MHPMCounterNum)
+      .MHPMCounterNum    (MHPMCounterNum),
+      .regsw_config_t(regsw_config_t)
   ) csr_regfile_i (
       .flush_o                 (flush_csr_ctrl),
       .halt_csr_o              (halt_csr_ctrl),
@@ -1080,7 +1089,10 @@ module cva6
       .ipi_i,
       .irq_i,
       .time_irq_i,
+      //regsw restore
+      .regsw_restore_o         (regsw_restore),
       .*
+      
   );
 
   // ------------------------

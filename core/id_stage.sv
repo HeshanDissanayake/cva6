@@ -21,7 +21,8 @@ module id_stage #(
     parameter type irq_ctrl_t = logic,
     parameter type scoreboard_entry_t = logic,
     parameter type interrupts_t = logic,
-    parameter interrupts_t INTERRUPTS = '0
+    parameter interrupts_t INTERRUPTS = '0,
+    parameter type regsw_config_t = logic
 ) (
     // Subsystem Clock - SUBSYSTEM
     input logic clk_i,
@@ -76,7 +77,9 @@ module id_stage #(
     // Trap sret - CSR_REGFILE
     input logic tsr_i,
     // Hypervisor user mode - CSR_REGFILE
-    input logic hu_i
+    input logic hu_i,
+    //regsw restore from the CSR register file
+    input regsw_config_t  regsw_restore_i
 );
   // ID/ISSUE register stage
   typedef struct packed {
@@ -89,9 +92,6 @@ module id_stage #(
 
   logic              [ariane_pkg::SUPERSCALAR:0]       is_control_flow_instr;
   
-  logic              [ariane_pkg::SUPERSCALAR:0][31:0] register_config_q, register_config_n;
-  logic              [ariane_pkg::SUPERSCALAR:0][ariane_pkg::REGSW_POINTER_LEN-1:0]  register_config_pointer_q, register_config_pointer_n;
-  logic              [ariane_pkg::SUPERSCALAR:0]       is_regsw_intr;
 
   scoreboard_entry_t [ariane_pkg::SUPERSCALAR:0]       decoded_instruction;
   scoreboard_entry_t [ariane_pkg::SUPERSCALAR:0]       decoded_intermediate_instruction;
@@ -108,6 +108,12 @@ module id_stage #(
   logic                                                stall_instr_fetch;
   logic                                                is_last_macro_instr_o;
   logic                                                is_double_rd_macro_instr_o;
+
+  //regsw 
+  logic              [ariane_pkg::SUPERSCALAR:0][31:0] register_config_q, register_config_n;
+  logic              [ariane_pkg::SUPERSCALAR:0][ariane_pkg::REGSW_POINTER_LEN-1:0]  register_config_pointer_q, register_config_pointer_n;
+  logic              [ariane_pkg::SUPERSCALAR:0]       is_regsw_intr;
+  logic              regsw_enable_q, regsw_enable_n;
 
   if (CVA6Cfg.RVC) begin
     // ---------------------------------------------------------
@@ -243,26 +249,65 @@ module id_stage #(
     decoded_instruction[0] = decoded_intermediate_instruction[0];
     decoded_instruction[0].rs1 = rs1_bank;
     decoded_instruction[0].rs2 = rs2_bank;
-    decoded_instruction[0].rd = rd_bank;
+    decoded_instruction[0].rd  = rd_bank;
 
     register_config_pointer_n[0] = register_config_pointer_q[0];
     register_config_n[0] = register_config_q[0];
 
-    
+    regsw_enable_n = (regsw_restore_i.restore_flag == 3) ? regsw_restore_i.regsw_enable :  regsw_enable_q;
 
-    if(fetch_entry_ready_o[0]) begin 
+    if(flush_i & !regsw_restore_i.regsw_enable ) begin
+      register_config_n[0] = '0;
+      register_config_pointer_n[0] = 3'b000;
+    end else begin
+      
+      // any restore request from the CSR register file should happen if the regsw is not enabled
+      if(regsw_restore_i.restore_flag !=0  && !regsw_enable_q) begin
+      
+        if(regsw_restore_i.restore_flag == 1 ) begin
+          register_config_n[0] = regsw_restore_i.configuration;
+        end 
 
-      if(is_regsw_intr) begin
-        register_config_n[0] = {decoded_intermediate_instruction[0].rs1[4:0], decoded_intermediate_instruction[0].rs2[4:0], decoded_intermediate_instruction[0].result[10:0]}; 
+        if(regsw_restore_i.restore_flag == 2 ) begin
+          register_config_pointer_n[0] = regsw_restore_i.pointer;
+        end 
+      end else if(regsw_enable_q) begin
+
+        if(fetch_entry_ready_o[0]) begin 
+          if(is_regsw_intr) begin
+            register_config_n[0] = {decoded_intermediate_instruction[0].rs1[4:0], decoded_intermediate_instruction[0].rs2[4:0], decoded_intermediate_instruction[0].result[10:0]}; 
+          end
+
+          if (register_config_pointer_q == 3'b110 || is_jump) begin
+              register_config_n[0] = '0;
+          end 
+          
+          register_config_pointer_n = ((register_config_pointer_q == 3'b110) || is_regsw_intr || is_jump) ? 3'b000 : register_config_pointer_q + 3'b001;
+          
+        end
       end
-
-      if (register_config_pointer_q == 3'b110 || flush_i || is_jump) begin
-          register_config_n[0] = '0;
-      end 
-      register_config_pointer_n = ((register_config_pointer_q == 3'b110) || is_regsw_intr || is_jump) ? 3'b000: register_config_pointer_q + 3'b001; 
     end
-
   end
+
+
+    // if(fetch_entry_ready_o[0]) begin 
+
+    //   if(is_regsw_intr) begin
+    //     register_config_n[0] = {decoded_intermediate_instruction[0].rs1[4:0], decoded_intermediate_instruction[0].rs2[4:0], decoded_intermediate_instruction[0].result[10:0]}; 
+    //   end
+
+    //   if (register_config_pointer_q == 3'b110 || flush_i || is_jump) begin
+    //       register_config_n[0] = '0;
+    //   end 
+      
+    //   if((register_config_pointer_q == 3'b110) || is_regsw_intr || is_jump) begin
+    //     register_config_pointer_n = 3'b000;
+    //   end else begin
+    //     register_config_pointer_n = register_config_pointer_q + 3'b001;
+    //   end
+    // end
+
+  // end
 
 
   // ------------------
@@ -336,8 +381,8 @@ module id_stage #(
           fetch_entry_ready_o[0] = 1'b1;
         end
         issue_n[0] = '{1'b1, decoded_instruction[0], orig_instr[0], is_control_flow_instr[0]};
-        issue_n[0].sbe.regws_config.configuration =  register_config_n[0];
-        issue_n[0].sbe.regws_config.pointer =  register_config_pointer_n;
+        issue_n[0].sbe.regsw_config.configuration =  register_config_q[0];
+        issue_n[0].sbe.regsw_config.pointer =  register_config_pointer_q;
       end
 
       // invalidate the pipeline register on a flush
@@ -356,9 +401,11 @@ module id_stage #(
     if (!rst_ni) begin
       register_config_pointer_q <= 3'b000;
       register_config_q <= '0;
+      regsw_enable_q <= 1'b0;
     end else begin
       register_config_pointer_q <= register_config_pointer_n;
       register_config_q <= register_config_n;
+      regsw_enable_q <= regsw_enable_n;
     end
   
   end
