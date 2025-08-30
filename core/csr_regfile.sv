@@ -1766,6 +1766,12 @@ module csr_regfile
         end
         // trap to machine mode
       end else begin
+        //save the regsw_c and the regsw_mask
+        eregsw_c_d = commit_instr_i[0].regws_config.configuration;
+        eregsw_mask_d = commit_instr_i[0].regws_config.pointer;
+
+        
+
         // update mstatus
         mstatus_d.mie = 1'b0;
         mstatus_d.mpie = mstatus_q.mie;
