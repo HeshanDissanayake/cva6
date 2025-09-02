@@ -1735,6 +1735,10 @@ module csr_regfile
 
       // trap to supervisor mode
       if (CVA6Cfg.RVS && trap_to_priv_lvl == riscv::PRIV_LVL_S) begin
+         //save the regsw_c and the regsw_mask - S mode
+        eregsw_c_d = commit_instr_i[0].regsw_config.configuration;
+        eregsw_mask_d = commit_instr_i[0].regsw_config.pointer;
+
         if (CVA6Cfg.RVH && trap_to_v) begin
           // update sstatus
           vsstatus_d.sie = 1'b0;
@@ -1753,6 +1757,8 @@ module csr_regfile
                                         riscv::ENV_CALL_UMODE
                                       } || ex_i.cause[CVA6Cfg.XLEN-1])) ? '0 : ex_i.tval;
         end else begin
+          
+
           // update sstatus
           mstatus_d.sie = 1'b0;
           mstatus_d.spie = mstatus_q.sie;
@@ -1792,7 +1798,7 @@ module csr_regfile
         end
         // trap to machine mode
       end else begin
-        //save the regsw_c and the regsw_mask
+        //save the regsw_c and the regsw_mask - M mode
         eregsw_c_d = commit_instr_i[0].regsw_config.configuration;
         eregsw_mask_d = commit_instr_i[0].regsw_config.pointer;
 
@@ -2024,6 +2030,8 @@ module csr_regfile
     end
 
     if (CVA6Cfg.RVS && sret && ((CVA6Cfg.RVH && !v_q) || !CVA6Cfg.RVH)) begin
+      regsw_restore_o.restore_flag = 2'b11; //
+      regsw_restore_o.regsw_enable = 1'b1;  // enable regsw
       // return from exception, IF doesn't care from where we are returning
       eret_o         = 1'b1;
       // return the previous supervisor interrupt enable flag
