@@ -254,16 +254,14 @@ module id_stage #(
 
     regsw_enable_n = (regsw_restore_i.restore_flag == 3) ? regsw_restore_i.regsw_enable :  regsw_enable_q;
     
-    
-
-    if(flush_i & !regsw_restore_i.regsw_enable ) begin
+    if(flush_i) begin
       register_config_n[0] = '0;
       register_config_pointer_n[0] = 3'b000;
     end else begin
       
       // any restore request from the CSR register file should happen if the regsw is not enabled
       if(regsw_restore_i.restore_flag !=0  && !regsw_enable_q) begin
-      
+        
         if(regsw_restore_i.restore_flag == 1 ) begin
           register_config_n[0] = regsw_restore_i.configuration;
         end 
