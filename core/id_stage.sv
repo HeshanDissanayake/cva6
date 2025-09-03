@@ -247,14 +247,14 @@ module id_stage #(
 
   always_comb begin
     decoded_instruction[0] = decoded_intermediate_instruction[0];
-    decoded_instruction[0].rs1 = rs1_bank;
-    decoded_instruction[0].rs2 = rs2_bank;
-    decoded_instruction[0].rd  = rd_bank;
+   
 
     register_config_pointer_n[0] = register_config_pointer_q[0];
     register_config_n[0] = register_config_q[0];
 
     regsw_enable_n = (regsw_restore_i.restore_flag == 3) ? regsw_restore_i.regsw_enable :  regsw_enable_q;
+    
+    
 
     if(flush_i & !regsw_restore_i.regsw_enable ) begin
       register_config_n[0] = '0;
@@ -272,6 +272,9 @@ module id_stage #(
           register_config_pointer_n[0] = regsw_restore_i.pointer;
         end 
       end else if(regsw_enable_q) begin
+        decoded_instruction[0].rs1 = rs1_bank;
+        decoded_instruction[0].rs2 = rs2_bank;
+        decoded_instruction[0].rd  = rd_bank;
 
         if(fetch_entry_ready_o[0]) begin 
           if(is_regsw_intr) begin
