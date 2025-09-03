@@ -261,7 +261,7 @@ module id_stage #(
       
       // any restore request from the CSR register file should happen if the regsw is not enabled
       if(regsw_restore_i.restore_flag !=0  && !regsw_enable_q) begin
-        
+
         if(regsw_restore_i.restore_flag == 1 ) begin
           register_config_n[0] = regsw_restore_i.configuration;
         end 
@@ -279,11 +279,11 @@ module id_stage #(
             register_config_n[0] = {decoded_intermediate_instruction[0].rs1[4:0], decoded_intermediate_instruction[0].rs2[4:0], decoded_intermediate_instruction[0].result[10:0]}; 
           end
 
-          if (register_config_pointer_q == 3'b110 || is_jump) begin
+          if (register_config_pointer_q[0] == 3'b110 || is_jump) begin
               register_config_n[0] = '0;
           end 
           
-          register_config_pointer_n = ((register_config_pointer_q == 3'b110) || is_regsw_intr || is_jump) ? 3'b000 : register_config_pointer_q + 3'b001;
+          register_config_pointer_n[0] = ((register_config_pointer_q[0] == 3'b110) || is_regsw_intr || is_jump) ? 3'b000 : register_config_pointer_q[0] + 3'b001;
           
         end
       end
