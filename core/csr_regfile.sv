@@ -2465,6 +2465,10 @@ module csr_regfile
         dpc_q            <= '0;
         dscratch0_q      <= {CVA6Cfg.XLEN{1'b0}};
         dscratch1_q      <= {CVA6Cfg.XLEN{1'b0}};
+         //regsw regsiters
+        eregsw_c_q <= '0;
+        eregsw_mask_q <= '0;
+        regsw_restore_q <= '0;
       end
       // machine mode registers
       mstatus_q        <= 64'b0;

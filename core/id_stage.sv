@@ -254,7 +254,7 @@ module id_stage #(
 
     regsw_enable_n = (regsw_restore_i.restore_flag == 3) ? regsw_restore_i.regsw_enable :  regsw_enable_q;
     
-    if(flush_i) begin
+    if(flush_i && regsw_enable_q) begin
       register_config_n[0] = '0;
       register_config_pointer_n[0] = 3'b000;
     end else begin
