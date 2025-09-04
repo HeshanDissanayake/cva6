@@ -286,6 +286,10 @@ module csr_regfile
   logic [MHPMCounterNum+3-1:0] mcountinhibit_d, mcountinhibit_q;
   logic [3:0] index;
 
+  regsw_config_t regsw_restore_d, regsw_restore_q;
+  logic csr_update_regsw_c, csr_update_regsw_mask, csr_update_regsw_en;
+
+
   localparam logic [CVA6Cfg.XLEN-1:0] IsaCode = (CVA6Cfg.XLEN'(CVA6Cfg.RVA) <<  0)                // A - Atomic Instructions extension
   | (CVA6Cfg.XLEN'(CVA6Cfg.RVB) << 1)  // C - Bitmanip extension
   | (CVA6Cfg.XLEN'(CVA6Cfg.RVC) << 2)  // C - Compressed extension
@@ -330,6 +334,39 @@ module csr_regfile
     assign vsstatus_extended = '0;
   end
 
+  assign regsw_restore_o = regsw_restore_q;  
+
+  always_comb begin : regsw_config_update
+    regsw_restore_d = '0;
+    eregsw_c_d = eregsw_c_q;
+    eregsw_mask_d = eregsw_mask_q;
+
+    if(ex_i.valid)begin
+      regsw_restore_d.regsw_enable = 1'b0;
+      regsw_restore_d.restore_flag = 3;
+
+      //save the regsw_c and the regsw_mask - S mode / M mode
+      eregsw_c_d = commit_instr_i[0].regsw_config.configuration;
+      eregsw_mask_d = commit_instr_i[0].regsw_config.pointer;
+
+    end else begin
+      if(csr_update_regsw_c)begin
+        regsw_restore_d.configuration = csr_wdata;
+        regsw_restore_d.restore_flag = 1;
+      end else if(csr_update_regsw_mask) begin
+        regsw_restore_d.pointer      = csr_wdata;
+        regsw_restore_d.restore_flag = 2;
+      end else if(csr_update_regsw_en) begin
+        regsw_restore_d.regsw_enable = csr_wdata;
+        regsw_restore_d.restore_flag = 3;
+      end else if(sret || mret)begin
+        regsw_restore_d.regsw_enable = 1'b1;
+        regsw_restore_d.restore_flag = 3;
+      end
+    end
+  end
+  
+
   always_comb begin : csr_read_process
     // a read access exception can only occur if we attempt to read a CSR which does not exist
     read_access_exception = 1'b0;
@@ -337,7 +374,6 @@ module csr_regfile
     csr_rdata = '0;
     perf_addr_o = csr_addr.address[11:0];
     index = '0;
-    regsw_restore_o = '0;
 
     if (csr_read) begin
       unique case (conv_csr_addr.address)
@@ -938,7 +974,9 @@ module csr_regfile
     pmpcfg_d                 = pmpcfg_q;
     pmpaddr_d                = pmpaddr_q;
 
-    regsw_restore_o = '0;
+    csr_update_regsw_c = 1'b0;
+    csr_update_regsw_mask = 1'b0;
+    csr_update_regsw_en = 1'b0;
 
     // check for correct access rights and that we are writing
     if (csr_we) begin
@@ -946,18 +984,23 @@ module csr_regfile
 
         // regsw
         riscv::CSR_REGSW_C:begin
-          regsw_restore_o.configuration = csr_wdata;
-          regsw_restore_o.restore_flag = 1;
+          csr_update_regsw_c = 1'b1;
+          // regsw_restore_o.configuration = csr_wdata;
+          // regsw_restore_o.restore_flag = 1;
         end
 
         riscv::CSR_REGSW_MASK:begin
-          regsw_restore_o.pointer      = csr_wdata;
-          regsw_restore_o.restore_flag = 2;
+          csr_update_regsw_mask = 1'b1;
+          
+          // regsw_restore_o.pointer      = csr_wdata;
+          // regsw_restore_o.restore_flag = 2;
         end
 
         riscv::CSR_REGSW_ENABLE:begin
-          regsw_restore_o.regsw_enable = csr_wdata;
-          regsw_restore_o.restore_flag = 3;
+          csr_update_regsw_en = 1'b1;
+
+          // regsw_restore_o.regsw_enable = csr_wdata;
+          // regsw_restore_o.restore_flag = 3;
         end
 
         // Floating-Point
@@ -1673,6 +1716,9 @@ module csr_regfile
       fcsr_d.fflags |= acc_fflags_ex_valid_i ? acc_fflags_ex_i : 5'b0;
     end
 
+
+
+    
     // ---------------------
     // External Interrupts
     // ---------------------
@@ -1693,6 +1739,9 @@ module csr_regfile
     // Exception is taken and we are not in debug mode
     // exceptions in debug mode don't update any fields
     if ((CVA6Cfg.DebugEn && !debug_mode_q && ex_i.cause != riscv::DEBUG_REQUEST && ex_i.valid) || (!CVA6Cfg.DebugEn && ex_i.valid)) begin
+
+      
+
       // do not flush, flush is reserved for CSR writes with side effects
       flush_o = 1'b0;
       // figure out where to trap to
@@ -1735,9 +1784,9 @@ module csr_regfile
 
       // trap to supervisor mode
       if (CVA6Cfg.RVS && trap_to_priv_lvl == riscv::PRIV_LVL_S) begin
-         //save the regsw_c and the regsw_mask - S mode
-        eregsw_c_d = commit_instr_i[0].regsw_config.configuration;
-        eregsw_mask_d = commit_instr_i[0].regsw_config.pointer;
+       
+
+       
 
         if (CVA6Cfg.RVH && trap_to_v) begin
           // update sstatus
@@ -1798,14 +1847,7 @@ module csr_regfile
         end
         // trap to machine mode
       end else begin
-        //save the regsw_c and the regsw_mask - M mode
-        eregsw_c_d = commit_instr_i[0].regsw_config.configuration;
-        eregsw_mask_d = commit_instr_i[0].regsw_config.pointer;
-
-        regsw_restore_o.restore_flag = 2'b11; // 
-        regsw_restore_o.regsw_enable = 1'b0;  // disable regsw
-
-
+    
         // update mstatus
         mstatus_d.mie = 1'b0;
         mstatus_d.mpie = mstatus_q.mie;
@@ -2002,9 +2044,7 @@ module csr_regfile
     // When executing an xRET instruction, supposing xPP holds the value y, xIE is set to xPIE; the privilege
     // mode is changed to y; xPIE is set to 1; and xPP is set to U
     if (mret) begin
-      // enable regsw
-      regsw_restore_o.restore_flag = 2'b11; //
-      regsw_restore_o.regsw_enable = 1'b1;  // enable regsw
+     
       
        // return from exception, IF doesn't care from where we are returning
       eret_o        = 1'b1;
@@ -2030,8 +2070,7 @@ module csr_regfile
     end
 
     if (CVA6Cfg.RVS && sret && ((CVA6Cfg.RVH && !v_q) || !CVA6Cfg.RVH)) begin
-      regsw_restore_o.restore_flag = 2'b11; //
-      regsw_restore_o.regsw_enable = 1'b1;  // enable regsw
+    
       // return from exception, IF doesn't care from where we are returning
       eret_o         = 1'b1;
       // return the previous supervisor interrupt enable flag
@@ -2052,6 +2091,7 @@ module csr_regfile
     end
 
     if (CVA6Cfg.RVH && sret && v_q) begin
+      
       // return from exception, IF doesn't care from where we are returning
       eret_o          = 1'b1;
       // return the previous supervisor interrupt enable flag
@@ -2572,7 +2612,7 @@ module csr_regfile
       //regsw regsiters
       eregsw_c_q <= eregsw_c_d;
       eregsw_mask_q <= eregsw_mask_d;
-
+      regsw_restore_q <= regsw_restore_d;
     end
   end
 
