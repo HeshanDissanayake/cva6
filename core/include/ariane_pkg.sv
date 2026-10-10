@@ -59,7 +59,7 @@ package ariane_pkg;
 
   // 32 registers
   localparam REG_ADDR_SIZE = 5;
-  localparam REG_ADDR_SIZE_NEW = 6;
+  localparam REG_ADDR_SIZE_NEW = 5;
 
   // Read ports for general purpose register files
   localparam NR_RGPR_PORTS = 2;

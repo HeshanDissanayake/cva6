@@ -37,7 +37,8 @@ module ariane_testharness #(
   input  logic                           clk_i,
   input  logic                           rtc_i,
   input  logic                           rst_ni,
-  output logic [31:0]                    exit_o
+  output logic [31:0]                    exit_o,
+  // input logic dummy_intr
 );
 
   localparam [7:0] hart_id = '0;
@@ -543,6 +544,7 @@ module ariane_testharness #(
   // ---------------
   logic ipi;
   logic timer_irq;
+  logic timer_irq_orig;
 
   ariane_axi_soc::req_slv_t  axi_clint_req;
   ariane_axi_soc::resp_slv_t axi_clint_resp;
@@ -562,7 +564,7 @@ module ariane_testharness #(
     .axi_req_i   ( axi_clint_req  ),
     .axi_resp_o  ( axi_clint_resp ),
     .rtc_i       ( rtc_i          ),
-    .timer_irq_o ( timer_irq      ),
+    .timer_irq_o ( timer_irq_orig      ),
     .ipi_o       ( ipi            )
   );
 
@@ -641,6 +643,7 @@ module ariane_testharness #(
     .irq_i                ( irqs                ),
     .ipi_i                ( ipi                 ),
     .time_irq_i           ( timer_irq           ),
+    // .time_irq_i           ( dummy_intr          ),
     .rvfi_probes_o        ( rvfi_probes         ),
 // Disable Debug when simulating with Spike
 `ifdef SPIKE_TANDEM

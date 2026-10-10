@@ -126,13 +126,15 @@ class preload_aware_dtm_t : public dtm_t {
     void reset() {}
 };
 
+
 int main(int argc, char **argv) {
+
   std::clock_t c_start = std::clock();
   auto t_start = std::chrono::high_resolution_clock::now();
   bool verbose;
   bool perf;
   unsigned random_seed = (unsigned)time(NULL) ^ (unsigned)getpid();
-  uint64_t max_cycles = 2000;
+  uint64_t max_cycles = 30000;
   int ret = 0;
   bool print_cycles = false;
   // Port numbers are 16 bit unsigned integers.
@@ -329,6 +331,8 @@ done_processing:
   }
   top->rst_ni = 1;
 
+
+
   // Preload memory.
 #if (VERILATOR_VERSION_INTEGER >= 5000000)
   // Verilator v5: Use rootp pointer and .data() accessor.
@@ -342,9 +346,14 @@ done_processing:
   long long addr;
   long long len;
 
+  // top->dummy_intr = 0;
+
   size_t mem_size = 0xFFFFFF;
   while(get_section(&addr, &len))
-  {
+  { 
+
+   
+
     if (addr == 0x80000000)
         read_section_void(addr, (void *) MEM , mem_size);
     if (addr == 0x84000000)
@@ -356,6 +365,7 @@ done_processing:
   }
 
   while (!dtm->done() && !jtag->done() && !(top->exit_o & 0x1)  && (main_time < max_cycles)) {
+    
     top->clk_i = 0;
     top->eval();
 #if VM_TRACE
@@ -364,6 +374,14 @@ done_processing:
 #endif
 
     top->clk_i = 1;
+  // if (main_time > 1015){
+  //   top->dummy_intr = 1;
+  // }else{
+  //   top->dummy_intr = 0;
+  // }
+
+    
+// #define irq top->rootp->ariane_testharness__DOT__test
     top->eval();
 #if VM_TRACE
     if (vcdfile || fst_fname)
