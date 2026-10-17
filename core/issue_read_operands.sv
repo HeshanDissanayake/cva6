@@ -630,7 +630,7 @@ module issue_read_operands
         .DATA_WIDTH   (CVA6Cfg.XLEN),
         .NR_READ_PORTS(CVA6Cfg.NrRgprPorts),
         .ZERO_REG_ZERO(1),
-        .ADDR_WIDTH   (6)
+        .ADDR_WIDTH   (REG_ADDR_SIZE_NEW)
 
     ) i_ariane_regfile (
         .test_en_i(1'b0),
